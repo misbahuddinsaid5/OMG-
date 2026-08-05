@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamen Rider Ichigo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .logo-container {
+            width: 85vmin;
+            height: 85vmin;
+            max-width: 750px;
+            max-height: 750px;
+            position: relative;
+            animation: fadeInAndShadow 1.5s ease-out forwards;
+            cursor: default; 
+            transform-origin: center;
+        }
+
+        /* =========================================
+           TEXT: RAIDER STYLE
+           ========================================= */
+        .henshin-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0); /* Awalnya kecil/hilang */
+            
+            /* Typography Style Showa Era */
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 18vmin; /* Ukuran besar responsif */
+            font-style: italic;
+            font-weight: 900;
+            letter-spacing: -2px;
+            color: #E60000; /* Merah Ichigo */
+            text-transform: uppercase;
+            
+            /* Stroke & Shadow effect untuk kesan komik/retro */
+            -webkit-text-stroke: 2px white;
+            text-shadow: 
+                4px 4px 0px #000, 
+                -2px -2px 0px #fff,
+                0 0 20px rgba(255, 0, 0, 0.8);
+            
+            z-index: 100; /* Di atas segalanya */
+            opacity: 0;
+            pointer-events: none; /* Agar klik tembus ke logo */
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Tampilan saat Henshin Active */
+        .logo-container.henshin-active .henshin-text {
+            opacity: 1;
+            /* Efek Zoom in Slam */
+            transform: translate(-50%, -50%) scale(1); 
+            /* Ikut bergetar tapi dengan ritme teks */
+            animation: textPanic 0.1s infinite alternate; 
+        }
+
+        /* =========================================
+           TRANSISI KEMBALI (RETURN STATE) - 0.5 Detik
+           ========================================= */
+        
+        .logo-container.interactive,
+        .logo-container.interactive svg,
+        .logo-container.interactive .eye-group,
+        .logo-container.interactive .scarf-ring,
+        .logo-container.interactive .o-signal,
+        .logo-container.interactive .crusher-group {
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+        }
+
+        .logo-container.interactive .eye-group {
+            opacity: 1;
+            transform: scale(1);
+            filter: drop-shadow(0 0 0 rgba(0,0,0,0)); 
+        }
+        
+        .logo-container.interactive .o-signal {
+            opacity: 1;
+            transform: scale(1);
+            filter: none;
+        }
+
+        .logo-container.interactive {
+            cursor: pointer;
+            transform: scale(1);
+        }
+
+        /* ========================================= */
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: visible; 
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 60px; 
+            color: #444;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInText 1s ease-out 3s forwards;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+            transition: opacity 0.3s;
+        }
+
+        .logo-container.henshin-active ~ .instruction {
+            opacity: 0;
+        }
+
+        /* === FOOTER STYLE === */
+        .site-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeInText 1s ease-out 3.5s forwards;
+            padding: 10px 0; 
+        }
+        
+        .site-footer span.gemini {
+            color: #008F69; 
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        
+        .site-footer span.user {
+            color: #E60000; 
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        /* =========================================
+           STATE: HENSHIN ACTIVE (DITEKAN)
+           ========================================= */
+        
+        .logo-container.henshin-active {
+            animation: violentShake 0.08s infinite !important;
+            filter: drop-shadow(0 0 40px rgba(114, 255, 150, 0.6));
+            transform: scale(1.02); 
+            transition: none; 
+        }
+        
+        .logo-container.henshin-active .eye-group {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+            animation: eyeStrobe 0.1s infinite alternate !important;
+            filter: brightness(2) drop-shadow(0 0 10px red); 
+            transition: none;
+        }
+        
+        .logo-container.henshin-active .scarf-ring {
+            opacity: 1 !important;
+            transform: scale(1) rotate(0deg);
+            animation: spinFast 0.2s linear infinite !important;
+            transition: none;
+        }
+        
+        .logo-container.henshin-active .o-signal {
+            opacity: 1 !important;
+            animation: signalPanic 0.1s infinite !important;
+            transition: none;
+        }
+        
+        .logo-container.henshin-active svg {
+            filter: brightness(1.2);
+            transition: none;
+        }
+
+        .logo-container.henshin-active ~ .site-footer span {
+            animation: neonEnergy 0.1s infinite alternate;
+        }
+
+        /* =========================================
+           NORMAL ANIMATIONS (INTRO)
+           ========================================= */
+        
+        svg > circle.base-ring:nth-of-type(1) {
+            transform-origin: center;
+            opacity: 0;
+            animation: turbineScale 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards;
+        }
+        .scarf-ring {
+            transform-origin: center;
+            opacity: 0;
+            transform: scale(0.5) rotate(-180deg);
+            animation: spinIn 1s cubic-bezier(0.23, 1, 0.32, 1) 0.4s forwards;
+        }
+        svg > circle.base-ring:nth-of-type(3),
+        svg > circle.ichigo-helmet-bg {
+            transform-origin: center;
+            opacity: 0;
+            animation: simpleZoom 0.6s ease-out 0.8s forwards;
+        }
+        svg > path.side-muffler,
+        svg > path.jaw-bg {
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: sideSnap 0.6s ease-out 1.0s forwards;
+        }
+        svg > path.side-muffler:nth-of-type(2) { transform: translateX(20px); }
+
+        svg > g.crusher-group {
+            opacity: 0;
+            transform: translateY(100px);
+            animation: mechanicalLockUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.2s forwards;
+        }
+        svg .crusher-vent {
+            opacity: 0;
+            transform: scaleY(0);
+            transform-origin: top;
+            animation: ventOpen 0.5s ease-out 1.8s forwards;
+        }
+
+        svg > path.ichigo-antenna {
+            stroke-dasharray: 800;
+            stroke-dashoffset: 800;
+            animation: drawLine 1.5s cubic-bezier(0.4, 0, 0.2, 1) 1.8s forwards;
+        }
+
+        svg g.eye-group {
+            opacity: 0;
+            transform-origin: center;
+            animation: eyeIgnition 1.5s linear 2.2s forwards; 
+        }
+        
+        svg path.eye-texture {
+            opacity: 0;
+            animation: fadeQuick 0.1s linear 2.3s forwards;
+        }
+        svg > g.center-base {
+            opacity: 0;
+            transform: scaleY(0); 
+            transform-origin: 500px 140px; 
+            animation: growVertical 0.6s ease-out 2.0s forwards;
+        }
+        
+        svg > circle.o-signal {
+            opacity: 0;
+            transform-origin: center;
+            animation: signalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 3.0s forwards;
+        }
+        
+        svg > circle.o-signal-highlight {
+            opacity: 0;
+            animation: fadeQuick 0.5s ease-out 3.2s forwards;
+        }
+
+        /* =========================================
+           KEYFRAMES
+           ========================================= */
+        @keyframes violentShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-4px, 4px) rotate(-1deg); }
+            40% { transform: translate(4px, -4px) rotate(1deg); }
+            60% { transform: translate(-4px, -4px) rotate(0deg); }
+            80% { transform: translate(4px, 4px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        @keyframes textPanic {
+            0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); text-shadow: 4px 4px 0px #000; }
+            100% { transform: translate(-50%, -50%) scale(1.1) rotate(2deg); text-shadow: 6px 6px 0px #000; }
+        }
+        @keyframes spinFast { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes eyeStrobe {
+            0% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 5px red); transform: scale(1); }
+            100% { opacity: 1; filter: brightness(4) drop-shadow(0 0 40px #ff0000); transform: scale(1.02); }
+        }
+        @keyframes neonEnergy {
+            from { text-shadow: 0 0 5px currentColor; filter: brightness(1.1); }
+            to { text-shadow: 0 0 20px currentColor, 0 0 30px currentColor; filter: brightness(1.6); }
+        }
+        @keyframes signalPanic {
+            0% { opacity: 0.8; filter: none; }
+            100% { opacity: 1; filter: drop-shadow(0 0 20px #72CEA6); transform: scale(1.3); }
+        }
+        @keyframes fadeInAndShadow {
+            from { opacity: 0; filter: drop-shadow(0 0 0 rgba(0,0,0,0)); transform: scale(0.95); }
+            to { opacity: 1; filter: drop-shadow(0 30px 40px rgba(0,0,0,0.7)); transform: scale(1); }
+        }
+        @keyframes turbineScale { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spinIn { from { opacity: 0; transform: scale(0.8) rotate(-90deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+        @keyframes simpleZoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes sideSnap { from { opacity: 0; } to { opacity: 1; transform: translateX(0); } }
+        @keyframes mechanicalLockUp { 0% { opacity: 0; transform: translateY(80px); } 60% { opacity: 1; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(10px); } }
+        @keyframes ventOpen { to { opacity: 1; transform: scaleY(1); } }
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes eyeIgnition { 
+            0% { opacity: 0; transform: scale(0.9); filter: brightness(0); } 
+            10% { opacity: 1; transform: scale(0.95); filter: brightness(2); } 
+            20% { opacity: 0.5; filter: brightness(0.5); } 
+            30% { opacity: 1; filter: brightness(1.5); } 
+            100% { opacity: 1; transform: scale(1); filter: brightness(1); } 
+        }
+        @keyframes fadeQuick { to { opacity: 1; } }
+        @keyframes growVertical { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+        @keyframes signalPop { from { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.4); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeInText { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+<div class="logo-container" id="logoContainer">
+    <div class="henshin-text">AKAKRAIDER</div>
+
+    <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+        
+        <defs>
+            <linearGradient id="silverMetalDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#909090;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#505050;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="scarfRed" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#E60000;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#990000;stop-opacity:1" />
+            </linearGradient>
+            <radialGradient id="ichigoGreen" cx="50%" cy="40%" r="70%">
+                <stop offset="0%" style="stop-color:#00664B;stop-opacity:1" /> 
+                <stop offset="100%" style="stop-color:#00291E;stop-opacity:1" /> 
+            </radialGradient>
+            <radialGradient id="eyeGlass" cx="30%" cy="30%" r="80%">
+                <stop offset="0%" style="stop-color:#FF5056;stop-opacity:1" />
+                <stop offset="90%" style="stop-color:#900005;stop-opacity:1" />
+            </radialGradient>
+            <pattern id="compoundDots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="5" cy="5" r="3" fill="#300000" opacity="0.4"/>
+            </pattern>
+            <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/>
+                <feOffset in="blur" dx="0" dy="6" result="offsetBlur"/>
+                <feMerge> 
+                    <feMergeNode in="offsetBlur"/>
+                    <feMergeNode in="SourceGraphic"/> 
+                </feMerge>
+            </filter>
+            <filter id="strongDropShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
+                <feOffset in="blur" dx="0" dy="12" result="offsetBlur"/>
+                <feComponentTransfer in="offsetBlur" result="darkShadow">
+                    <feFuncA type="linear" slope="0.8"/>
+                </feComponentTransfer>
+                <feMerge> 
+                    <feMergeNode in="darkShadow"/>
+                    <feMergeNode in="SourceGraphic"/> 
+                </feMerge>
+            </filter>
+        </defs>
+
+        <circle class="base-ring" cx="500" cy="500" r="495" fill="#111" />
+        <circle class="scarf-ring base-ring" cx="500" cy="500" r="465" fill="url(#scarfRed)" stroke="#300" stroke-width="3"/>
+        <circle class="base-ring" cx="500" cy="500" r="390" fill="#0A0A0A" />
+        <circle class="base-ring ichigo-helmet-bg" cx="500" cy="500" r="375" fill="url(#ichigoGreen)" />
+
+        <path class="side-muffler" d="M 120 500 Q 120 400 180 300 L 200 320 Q 160 420 160 500 Q 160 600 200 700 L 180 720 Q 120 620 120 500 Z" 
+              fill="#00291E" opacity="0.6"/>
+        <path class="side-muffler" d="M 880 500 Q 880 400 820 300 L 800 320 Q 840 420 840 500 Q 840 600 800 700 L 820 720 Q 880 620 880 500 Z" 
+              fill="#00291E" opacity="0.6"/>
+
+        <g class="eye-group" filter="url(#softShadow)">
+            <path d="M 455 460 C 455 340, 380 300, 310 330 C 250 355, 230 480, 260 560 C 290 630, 455 610, 455 460 Z"
+                  fill="url(#eyeGlass)" stroke="#500" stroke-width="2"/>
+            <path d="M 545 460 C 545 340, 620 300, 690 330 C 750 355, 770 480, 740 560 C 710 630, 545 610, 545 460 Z"
+                  fill="url(#eyeGlass)" stroke="#500" stroke-width="2"/>
+            <path class="eye-texture" d="M 455 460 C 455 340, 380 300, 310 330 C 250 355, 230 480, 260 560 C 290 630, 455 610, 455 460 Z"
+                  fill="url(#compoundDots)" opacity="0.7" style="mix-blend-mode: multiply;"/>
+            <path class="eye-texture" d="M 545 460 C 545 340, 620 300, 690 330 C 750 355, 770 480, 740 560 C 710 630, 545 610, 545 460 Z"
+                  fill="url(#compoundDots)" opacity="0.7" style="mix-blend-mode: multiply;"/>
+            <ellipse cx="350" cy="400" rx="30" ry="50" fill="white" opacity="0.3" transform="rotate(-20 350 400)"/>
+            <ellipse cx="650" cy="400" rx="30" ry="50" fill="white" opacity="0.3" transform="rotate(20 650 400)"/>
+        </g>
+
+        <path class="jaw-bg" d="M 275 660 L 455 630 L 455 670 Q 350 700 275 660 Z" fill="#001510" />
+        <path class="jaw-bg" d="M 725 660 L 545 630 L 545 670 Q 650 700 725 660 Z" fill="#001510" />
+        <path class="jaw-bg" d="M 460 670 L 540 670 L 540 700 L 460 700 Z" fill="#000" opacity="0.8" />
+
+        <g class="crusher-group" transform="translate(0, 10)" filter="url(#strongDropShadow)">
+            <path d="M 270 690 L 730 690 L 760 760 L 720 840 Q 600 910 500 915 Q 400 910 280 840 L 240 760 L 270 690 Z" 
+                  fill="url(#silverMetalDark)" stroke="#444" stroke-width="2"/>
+            <path d="M 330 840 Q 500 900 670 840 L 650 870 Q 500 930 350 870 Z" fill="#222" opacity="0.4"/>
+            <path d="M 485 690 L 515 690 L 510 915 L 490 915 Z" fill="#707070" stroke="#333" stroke-width="1"/>
+            <rect x="495" y="690" width="10" height="225" fill="#A0A0A0" opacity="0.5" />
+            
+            <path class="crusher-vent" d="M 310 720 L 370 720 L 360 770 L 320 760 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 385 720 L 470 720 L 465 775 L 390 770 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 340 780 L 390 785 L 380 825 L 350 815 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 405 785 L 475 790 L 470 830 L 410 825 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 690 720 L 630 720 L 640 770 L 680 760 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 615 720 L 530 720 L 535 775 L 610 770 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 660 780 L 610 785 L 620 825 L 650 815 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+            <path class="crusher-vent" d="M 595 785 L 525 790 L 530 830 L 590 825 Z" fill="#151515" stroke="#000" stroke-width="1"/>
+        </g>
+
+        <g class="center-base" filter="url(#softShadow)">
+            <path d="M 475 140 L 525 140 L 510 680 L 490 680 Z" 
+                  fill="url(#silverMetalDark)" stroke="#444"/>
+            <path d="M 500 140 L 500 680" stroke="#222" stroke-width="3" />
+        </g>
+
+        <path class="ichigo-antenna" d="M 485 460 C 480 380, 440 150, 400 -40" 
+              fill="none" stroke="#000000" stroke-width="10" stroke-linecap="round"/>
+        <path class="ichigo-antenna" d="M 515 460 C 520 380, 560 150, 600 -40" 
+              fill="none" stroke="#000000" stroke-width="10" stroke-linecap="round"/>
+
+        <path class="ichigo-antenna" d="M 485 460 C 480 380, 440 150, 400 -40" 
+              fill="none" stroke="url(#silverMetalDark)" stroke-width="6" stroke-linecap="round"/>
+        <path class="ichigo-antenna" d="M 515 460 C 520 380, 560 150, 600 -40" 
+              fill="none" stroke="url(#silverMetalDark)" stroke-width="6" stroke-linecap="round"/>
+        <circle class="o-signal" cx="500" cy="485" r="20" fill="#72CEA6" stroke="#555" stroke-width="2"/>
+        <circle class="o-signal-highlight" cx="495" cy="480" r="7" fill="white" opacity="0.5"/>
+
+    </svg>
+</div>
+
+<div class="instruction">Tekan dan Tahan</div>
+
+<footer class="site-footer">
+    Dibuat oleh <span class="gemini">Akak</span><span class="user">Punya</span>
+</footer>
+
+<script>
+    const container = document.getElementById('logoContainer');
+    let isAnimationFinished = false;
+
+    window.addEventListener('load', () => {
+        // Menunggu animasi intro selesai
+        setTimeout(() => {
+            isAnimationFinished = true;
+            container.classList.add('interactive'); 
+        }, 4500); 
+    });
+
+    // Mouse Interaction
+    container.addEventListener('mousedown', (e) => {
+        if (!isAnimationFinished) return;
+        if (e.button === 0) {
+            container.classList.add('henshin-active');
+            if (navigator.vibrate) navigator.vibrate([30, 30, 30, 30, 30]);
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        resetHenshin();
+    });
+
+    // Touch Interaction
+    container.addEventListener('touchstart', (e) => {
+        if (!isAnimationFinished) return;
+        e.preventDefault(); 
+        container.classList.add('henshin-active');
+    }, {passive: false});
+
+    container.addEventListener('touchend', () => {
+        resetHenshin();
+    });
+
+    function resetHenshin() {
+        if (container.classList.contains('henshin-active')) {
+            container.classList.remove('henshin-active');
+        }
+    }
+</script>
+
+</body>
+</html>
